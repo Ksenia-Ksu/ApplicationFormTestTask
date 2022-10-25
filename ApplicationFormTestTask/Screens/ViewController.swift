@@ -7,12 +7,12 @@
 import UIKit
 
 
-class ViewController: UIViewController  {
-   
-   
+final class ViewController: UIViewController  {
+    
+    
     var dataArray = [Child]()
     private var mainView = MainView()
-  
+    
     
     override func viewWillAppear(_ animated: Bool) {
         registerForKeyboardNotifications()
@@ -38,7 +38,7 @@ class ViewController: UIViewController  {
     
     //MARK: - Actions
     
-    @objc func cancelButtonTapped() {
+    @objc private func cancelButtonTapped() {
         
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         
@@ -54,8 +54,8 @@ class ViewController: UIViewController  {
         self.present(alert, animated: true, completion: nil)
     }
     
-    @objc func addButtonTapped(sender: UIButton) {
-       
+    @objc private func addButtonTapped(sender: UIButton) {
+        
         if children.count < 5 {
             dataArray.append(Child(name: "test", age: 100))
             mainView.cancelButton.isHidden = false
@@ -65,12 +65,24 @@ class ViewController: UIViewController  {
         if dataArray.count == 5 {
             sender.isHidden = true
         }
-       
+        
+    }
+    
+    @objc private func deleteCell(sender: UIButton) {
+        if let indexPath = mainView.tableView.indexPath(for: sender.superview?.superview as! ChildCell){
+            dataArray.removeLast()
+            mainView.tableView.deleteRows(at: [indexPath], with: .none)
+            
+        }
+        if dataArray.count < 5 {
+            mainView.tableView.reloadRows(at: [IndexPath(row: 0, section: 1)], with: .none)
+            mainView.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .none)
+        }
     }
     
     //MARK: - Notificatios for keyboard
     
-   
+    
     func registerForKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector:#selector(keyboardWillShown),name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector:#selector(keyboardWillBeHidden),name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -92,18 +104,18 @@ class ViewController: UIViewController  {
         }
     }
     
-    @objc func keyboardWillBeHidden(notification: NSNotification) {
+    @objc private func keyboardWillBeHidden(notification: NSNotification) {
         
         self.view.frame.origin.y = 0
         
     }
     
-   
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }
     
-    func removeNotifications () {
+    private  func removeNotifications () {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
         
@@ -111,7 +123,7 @@ class ViewController: UIViewController  {
     
 }
 
-//MARK: - TableViewDelegate and DataSource
+//MARK: - TableViewDelegate and DataSource methods
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
@@ -126,7 +138,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         } else {
             return  dataArray.count
         }
-      
+        
         
     }
     
@@ -158,17 +170,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     
-    @objc func deleteCell(sender: UIButton) {
-        if let indexPath = mainView.tableView.indexPath(for: sender.superview?.superview as! ChildCell){
-            dataArray.removeLast()
-            mainView.tableView.deleteRows(at: [indexPath], with: .none)
-           
-        }
-        if dataArray.count < 5 {
-            mainView.tableView.reloadRows(at: [IndexPath(row: 0, section: 1)], with: .none)
-            mainView.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .none)
-        }
-    }
+    
 }
 
 extension ViewController: UITextFieldDelegate {

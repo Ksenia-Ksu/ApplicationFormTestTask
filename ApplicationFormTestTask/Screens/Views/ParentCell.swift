@@ -105,6 +105,8 @@ final class ParentCell: UITableViewCell {
     
 }
 
+//MARK: - TextFieldDelegate methods
+
 extension ParentCell: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
