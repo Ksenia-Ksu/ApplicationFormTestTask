@@ -4,18 +4,24 @@
 //
 //  Created by Ксения Кобак on 24.10.2022.
 //
-
 import UIKit
 
+
 class ViewController: UIViewController  {
-    
-    var dataArray = [Int]()
-    var mainView = MainView()
-    var isKeyboardAppear = false
+   
+   
+    var dataArray = [Child]()
+    private var mainView = MainView()
+  
     
     override func viewWillAppear(_ animated: Bool) {
         registerForKeyboardNotifications()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        removeNotifications()
+    }
+    
     
     override func viewDidLoad() {
         
@@ -24,22 +30,10 @@ class ViewController: UIViewController  {
         view.backgroundColor = .white
         mainView.tableView.delegate = self
         mainView.tableView.dataSource = self
-        mainView.nameTF.delegate = self
-        mainView.ageTF.delegate = self
         registerForKeyboardNotifications()
-        
-        
-        if dataArray.count == 0 {
-            mainView.cancelButton.isHidden = true
-        }
-        
         mainView.cancelButton.addTarget(self, action: #selector(cancelButtonTapped), for: .touchUpInside)
-        mainView.addButton.addTarget(self, action: #selector(addButtonTapped(sender:)), for: .touchUpInside)
         
     }
-    
-    
-    
     
     
     //MARK: - Actions
@@ -52,8 +46,7 @@ class ViewController: UIViewController  {
             self.dataArray = []
             self.mainView.tableView.reloadData()
             self.mainView.cancelButton.isHidden = true
-            self.mainView.addButton.isHidden = false
-            self.mainView.clearTextFields()
+            
         }))
         
         alert.addAction(UIAlertAction(title: Text.actionCancel, style: .cancel , handler: nil))
@@ -62,23 +55,22 @@ class ViewController: UIViewController  {
     }
     
     @objc func addButtonTapped(sender: UIButton) {
-        if dataArray.count < 5 {
-            dataArray.append(0)
+       
+        if children.count < 5 {
+            dataArray.append(Child(name: "test", age: 100))
             mainView.cancelButton.isHidden = false
-            mainView.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+            mainView.tableView.insertRows(at: [IndexPath(row: 0, section: 1)], with: .automatic)
         }
+        
         if dataArray.count == 5 {
             sender.isHidden = true
         }
+       
     }
     
     //MARK: - Notificatios for keyboard
     
-    func removeNotifications () {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
-        
-    }
+   
     func registerForKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector:#selector(keyboardWillShown),name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector:#selector(keyboardWillBeHidden),name: UIResponder.keyboardWillHideNotification, object: nil)
@@ -106,13 +98,16 @@ class ViewController: UIViewController  {
         
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        removeNotifications()
+   
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
     }
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-            self.view.endEditing(true)
-        }
+    func removeNotifications () {
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+        
+    }
     
 }
 
@@ -120,32 +115,58 @@ class ViewController: UIViewController  {
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+    
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return dataArray.count
+        if section == 0 {
+            return 1
+        } else {
+            return  dataArray.count
+        }
+      
         
     }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: CellIDs.childCell, for: indexPath) as! ChildCell
-        cell.deleteButton.addTarget(self, action: #selector(deleteCell(sender:)), for: .touchUpInside)
-        return cell
         
+        if  indexPath.section == 0 {
+            let cell = ParentCell(style: .default, reuseIdentifier: CellIDs.parentCell)
+            cell.addButton.addTarget(self, action: #selector(addButtonTapped(sender:)), for: .touchUpInside)
+            if dataArray.count == 5 {
+                cell.addButton.isHidden = true
+            }
+            return cell
+        } else {
+            let cell = ChildCell(style: .default, reuseIdentifier: CellIDs.childCell)
+            cell.deleteButton.addTarget(self, action: #selector(deleteCell(sender:)), for: .touchUpInside)
+            return cell
+        }
+        
+        
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.section == 0 {
+            return 270
+        } else {
+            return 180
+        }
     }
     
     
     @objc func deleteCell(sender: UIButton) {
         if let indexPath = mainView.tableView.indexPath(for: sender.superview?.superview as! ChildCell){
-            dataArray.remove(at: indexPath.row)
-            mainView.tableView.deleteRows(at: [indexPath], with: .automatic)
-            if dataArray.count < 5  &&  mainView.addButton.isHidden == true {
-                mainView.addButton.isHidden = false }
-            
-            if dataArray.count == 5 && mainView.addButton.isHidden == false {
-                mainView.addButton.isHidden = true
-            }
+            dataArray.removeLast()
+            mainView.tableView.deleteRows(at: [indexPath], with: .none)
+           
+        }
+        if dataArray.count < 5 {
+            mainView.tableView.reloadRows(at: [IndexPath(row: 0, section: 1)], with: .none)
+            mainView.tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .none)
         }
     }
 }
@@ -158,15 +179,11 @@ extension ViewController: UITextFieldDelegate {
         
     }
     
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        if textField == mainView.ageTF {
-            textField.keyboardType = .numberPad
-        }
-        return true
-    }
+    
 }
 
 // MARK: Keyboard
+
 extension ViewController {
     @objc func keyboardWillShow(sender: NSNotification) {
         guard let userInfo = sender.userInfo,

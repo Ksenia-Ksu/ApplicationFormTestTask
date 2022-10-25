@@ -52,6 +52,11 @@ final class ChildCell: UITableViewCell {
     override func layoutSubviews() {
         
         super.layoutSubviews()
+        setupViews()
+        setupConstaints()
+    }
+    
+    private func setupViews() {
         nameInputTextField.delegate = self
         ageInputTextField.delegate = self
         contentView.addSubview(viewName)
@@ -61,9 +66,7 @@ final class ChildCell: UITableViewCell {
         viewName.addSubview(nameInputTextField)
         viewAge.addSubview(ageLabel)
         viewAge.addSubview(ageInputTextField)
-        setupConstaints()
     }
-    
     
     private func setupConstaints() {
         
