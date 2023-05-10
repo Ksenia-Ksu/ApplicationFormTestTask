@@ -1,7 +1,7 @@
 # Tic-tac-toe-game
 
 ## Tecnical Stack
-* IOS 15
+* iOS 15+
 * UiKit
 
 ## Overview
